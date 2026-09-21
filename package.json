@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Expose RainMachine sprinkler zones to HomeKit via Homebridge using RainMachine's local API directly (no cloud, no dependencies).",
   "main": "index.js",
-  "author": "Guanwen(Kurt) Wang",
+  "author": "Guanwen (Kurt) Wang",
   "license": "MIT",
   "homepage": "https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones#readme",
   "repository": {
@@ -13,10 +13,32 @@
   "bugs": {
     "url": "https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/issues"
   },
-  "keywords": ["homebridge-plugin", "supports-hap", "rainmachine", "irrigation", "sprinkler"],
-  "files": ["index.js", "config.schema.json", "README.md", "LICENSE"],
+  "keywords": [
+    "homebridge-plugin",
+    "supports-hap",
+    "rainmachine",
+    "irrigation",
+    "sprinkler"
+  ],
+  "files": [
+    "index.js",
+    "config.schema.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/harness.js"
+  },
   "engines": {
     "homebridge": ">=1.6.0",
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
+    "hap-nodejs": "^0.11.1",
+    "semantic-release": "^25.0.9"
   }
 }
