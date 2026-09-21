@@ -1,0 +1,66 @@
+{
+  "pluginAlias": "RainMachineZones",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Exposes RainMachine sprinkler zones as HomeKit valves, talking directly to the controller's local API (no cloud).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "RainMachine",
+        "required": true
+      },
+      "address": {
+        "title": "RainMachine Address",
+        "type": "string",
+        "description": "Local API address of your RainMachine, e.g. rainmachine.local, rainmachine.local:8080, or the full https://rainmachine.local:8080/api/4.",
+        "placeholder": "https://rainmachine.local:8080/api/4",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "RainMachine local access password.",
+        "required": true,
+        "x-schema-form": {
+          "type": "password"
+        }
+      },
+      "ignoreInactiveZones": {
+        "title": "Ignore inactive zones",
+        "type": "boolean",
+        "default": true,
+        "description": "Only show zones that are enabled/active on the RainMachine controller. Uncheck to also expose disabled zones."
+      },
+      "pollInterval": {
+        "title": "Poll Interval (seconds)",
+        "type": "integer",
+        "default": 30,
+        "minimum": 10,
+        "description": "How often to refresh zone state and active/inactive status from the controller."
+      },
+      "defaultRunTime": {
+        "title": "Default Run Time (seconds)",
+        "type": "integer",
+        "default": 600,
+        "minimum": 30,
+        "description": "Default watering duration used when a zone is turned on without an explicit duration set in the Home app."
+      }
+    },
+    "required": ["name"]
+  },
+  "form": [
+    "name",
+    "address",
+    "password",
+    "ignoreInactiveZones",
+    {
+      "type": "fieldset",
+      "title": "Advanced Settings",
+      "expandable": true,
+      "items": ["pollInterval", "defaultRunTime"]
+    }
+  ]
+}
