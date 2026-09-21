@@ -1,3 +1,10 @@
+## [0.0.4](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/compare/v0.0.3...v0.0.4) (2026-09-21)
+
+
+### Bug Fixes
+
+* use quotes instead of parentheses in author name to prevent npm mangling ([#5](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/issues/5)) ([7b1e3fd](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/commit/7b1e3fdee1c78859898c6b11501a56ce8d1b3285))
+
 ## [0.0.3](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/compare/v0.0.2...v0.0.3) (2026-09-21)
 
 

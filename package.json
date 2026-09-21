@@ -1,6 +1,6 @@
 {
   "name": "homebridge-rainmachine-zones",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Expose RainMachine sprinkler zones to HomeKit via Homebridge using RainMachine's local API directly (no cloud, no dependencies).",
   "main": "index.js",
   "author": {
