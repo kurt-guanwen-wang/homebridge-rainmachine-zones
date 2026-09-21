@@ -4,7 +4,7 @@
   "description": "Expose RainMachine sprinkler zones to HomeKit via Homebridge using RainMachine's local API directly (no cloud, no dependencies).",
   "main": "index.js",
   "author": {
-    "name": "Guanwen (Kurt) Wang"
+    "name": "Guanwen \"Kurt\" Wang"
   },
   "license": "MIT",
   "homepage": "https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones#readme",
