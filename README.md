@@ -30,7 +30,8 @@ modules).
 
 RainMachine zones in the Apple Home app:
 
-![RainMachine zones in Apple Home](docs/images/rainmachine-homkit.jpg)
+<img src="docs/images/rainmachine-homkit.jpg" alt="RainMachine zones in Apple Home" width="400">
+
 
 ## Installation
 
