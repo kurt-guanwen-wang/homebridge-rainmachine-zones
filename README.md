@@ -26,6 +26,12 @@ modules).
 - Clear, actionable logging for common problems (wrong password,
   unreachable host, bad address, etc.) - see [Troubleshooting](#troubleshooting).
 
+## Screenshot
+
+RainMachine zones in the Apple Home app:
+
+![RainMachine zones in Apple Home](docs/images/rainmachine-homkit.jpg)
+
 ## Installation
 
 Search for "RainMachine" in the Homebridge UI's Plugins tab, or install
