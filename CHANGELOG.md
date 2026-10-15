@@ -1,3 +1,10 @@
+# [0.1.0](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/compare/v0.0.4...v0.1.0) (2026-10-15)
+
+
+### Features
+
+* report accessory manufacturer, model, serial number and firmware to HomeKit ([830783a](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/commit/830783a60af90964af6525f9708925e7de10987b))
+
 ## [0.0.4](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/compare/v0.0.3...v0.0.4) (2026-09-21)
 
 
