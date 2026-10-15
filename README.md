@@ -67,12 +67,21 @@ Or configure directly in `config.json`:
       "address": "https://rainmachine.local:8080/api/4",
       "password": "your-rainmachine-password",
       "ignoreInactiveZones": true,
+      "exposeProgramStatus": true,
       "pollInterval": 30,
       "defaultRunTime": 600
     }
   ]
 }
 ```
+
+## Program status
+
+With `exposeProgramStatus` (default `true`) the plugin adds one read-only
+Irrigation System accessory. Its HomeKit Program Mode is `None` when no
+RainMachine program is active, `Program Scheduled` when at least one is, and
+`Program Scheduled (Manual Mode)` when a zone is running but no program is.
+HomeKit cannot edit schedules; keep editing programs in the RainMachine app.
 
 ## How it works
 

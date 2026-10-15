@@ -92,6 +92,7 @@ class RainMachineZonesPlatform {
     // Checkbox in the UI defaults to checked (ignore inactive zones), so only an
     // explicit `false` should disable the filter.
     this.ignoreInactiveZones = this.config.ignoreInactiveZones !== false;
+    this.exposeProgramStatus = this.config.exposeProgramStatus !== false;
 
     this._token = null;
     this._tokenExpiresAt = 0;
@@ -131,11 +132,26 @@ class RainMachineZonesPlatform {
         return;
       }
       this.log.info('Discovering RainMachine zones...');
-      this.discoverZones().catch((err) => this.log.error('Initial zone discovery failed: %s', this.describeError(err)));
+      this._refreshing = true;
+      this.discoverZones()
+        .catch((err) => this.log.error('Initial zone discovery failed: %s', this.describeError(err)))
+        .finally(() => {
+          this._refreshing = false;
+        });
       this._pollTimer = setInterval(() => {
+        // Skip this tick if the previous refresh is still in flight.
+        if (this._refreshing) {
+          this.log.debug('Previous zone refresh still running; skipping this poll');
+          return;
+        }
+        this._refreshing = true;
         // Re-runs full discovery so zones that become inactive are dropped and
         // zones that become active are picked up, in addition to state refresh.
-        this.discoverZones().catch((err) => this.log.warn('Periodic zone refresh failed: %s', this.describeError(err)));
+        this.discoverZones()
+          .catch((err) => this.log.warn('Periodic zone refresh failed: %s', this.describeError(err)))
+          .finally(() => {
+            this._refreshing = false;
+          });
       }, this.pollInterval);
     });
 
@@ -169,6 +185,52 @@ class RainMachineZonesPlatform {
   // Called by Homebridge for every cached accessory restored from disk.
   configureAccessory(accessory) {
     this.accessories.set(accessory.UUID, accessory);
+  }
+
+  uuidForController() {
+    return this.api.hap.uuid.generate('rainmachine-controller');
+  }
+
+  // A single Irrigation System accessory reporting whether the controller has
+  // active programs (ProgramMode) and whether any zone is watering (InUse).
+  // Read-only: schedules are still edited in the RainMachine app.
+  async setupControllerAccessory(allZones) {
+    const { Service, Characteristic } = this.api.hap;
+    const data = await this.apiRequest('GET', '/program');
+    const programs = data.programs || [];
+    const scheduled = programs.some((p) => p.active);
+    const programRunning = programs.some((p) => p.status);
+    const zoneRunning = allZones.some((z) => z.state);
+    // 0 = none, 1 = program scheduled, 2 = scheduled but a zone is running manually.
+    const mode = !scheduled ? 0 : zoneRunning && !programRunning ? 2 : 1;
+
+    const uuid = this.uuidForController();
+    const name = this.config.name || 'RainMachine';
+    let accessory = this.accessories.get(uuid);
+    if (!accessory) {
+      accessory = new this.api.platformAccessory(name, uuid);
+      this.accessories.set(uuid, accessory);
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.log.info('Added RainMachine program status accessory "%s"', name);
+    }
+    const info =
+      accessory.getService(Service.AccessoryInformation) || accessory.addService(Service.AccessoryInformation);
+    info
+      .setCharacteristic(Characteristic.Manufacturer, PLUGIN_NAME)
+      .setCharacteristic(Characteristic.Model, this.modelName())
+      .setCharacteristic(Characteristic.SerialNumber, 'controller')
+      .setCharacteristic(Characteristic.FirmwareRevision, require('./package.json').version);
+
+    const service =
+      accessory.getService(Service.IrrigationSystem) || accessory.addService(Service.IrrigationSystem, name);
+    service.updateCharacteristic(Characteristic.Active, 1);
+    service.updateCharacteristic(Characteristic.InUse, zoneRunning ? 1 : 0);
+    service.updateCharacteristic(Characteristic.ProgramMode, mode);
+    // Read-only: snap back to enabled if HomeKit tries to change it.
+    service.getCharacteristic(Characteristic.Active).onSet(() => {
+      setImmediate(() => service.updateCharacteristic(Characteristic.Active, 1));
+    });
+    this.log.debug('Program status: %s program(s), scheduled=%s, mode=%s', programs.length, scheduled, mode);
   }
 
   uuidForZone(uid) {
@@ -220,7 +282,17 @@ class RainMachineZonesPlatform {
     });
   }
 
-  async login() {
+  // Concurrent callers (poll + HomeKit commands) share one in-flight login.
+  login() {
+    if (!this._loginPromise) {
+      this._loginPromise = this._doLogin().finally(() => {
+        this._loginPromise = null;
+      });
+    }
+    return this._loginPromise;
+  }
+
+  async _doLogin() {
     const url = new URL(`${this.baseUrl}/auth/login`);
     this.log.debug('Authenticating with RainMachine at %s', url.origin);
     const body = JSON.stringify({ pwd: this.password, remember: 1 });
@@ -341,12 +413,24 @@ class RainMachineZonesPlatform {
         this.log.error('Failed to set up zone "%s" (uid %s): %s', zone.name || zone.uid, zone.uid, err.message);
       }
     }
+    if (this.exposeProgramStatus) {
+      seen.add(this.uuidForController());
+      try {
+        await this.setupControllerAccessory(allZones);
+      } catch (err) {
+        this.log.warn('Failed to update RainMachine program status: %s', this.describeError(err));
+      }
+    }
     // Drop accessories for zones that are now inactive (when ignoreInactiveZones is
     // on) or no longer exist on the controller.
     for (const [uuid, accessory] of this.accessories) {
       if (!seen.has(uuid)) {
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.accessories.delete(uuid);
+        if (uuid === this.uuidForController()) {
+          this.log.info('Removed RainMachine program status accessory "%s"', accessory.displayName);
+          continue;
+        }
         this.zoneStates.delete(accessory.context.zoneId);
         this.log.info('Removed inactive/missing zone "%s" (uid %s)', accessory.displayName, accessory.context.zoneId);
       }

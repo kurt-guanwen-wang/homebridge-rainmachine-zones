@@ -97,7 +97,12 @@ async function run() {
     await new Promise((r) => setTimeout(r, 500));
     check('logged in message present', log.lines.some((l) => l.includes('Logged in to RainMachine')));
     check('configured summary logged', log.lines.some((l) => l.includes('Configured: address=')));
-    check('2 active zones registered (inactive filtered)', api._registered.length === 2);
+    check('2 zones + 1 program status accessory registered', api._registered.length === 3);
+    const irrigation = api._registered[2].getService(api.hap.Service.IrrigationSystem);
+    check(
+      'program mode is scheduled/manual (zone running, no program running)',
+      irrigation && irrigation.getCharacteristic(api.hap.Characteristic.ProgramMode).value === 2
+    );
     const infoVal = (c) =>
       api._registered[0].getService(api.hap.Service.AccessoryInformation).getCharacteristic(c).value;
     check('manufacturer is plugin name', infoVal(api.hap.Characteristic.Manufacturer) === 'homebridge-rainmachine-zones');

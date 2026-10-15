@@ -34,6 +34,12 @@
         "default": true,
         "description": "Only show zones that are enabled/active on the RainMachine controller. Uncheck to also expose disabled zones."
       },
+      "exposeProgramStatus": {
+        "title": "Expose program status",
+        "type": "boolean",
+        "default": true,
+        "description": "Adds a read-only Irrigation System tile showing whether the controller has active programs (HomeKit Program Mode). Schedules are still edited in the RainMachine app."
+      },
       "pollInterval": {
         "title": "Poll Interval (seconds)",
         "type": "integer",
@@ -56,6 +62,7 @@
     "address",
     "password",
     "ignoreInactiveZones",
+    "exposeProgramStatus",
     {
       "type": "fieldset",
       "title": "Advanced Settings",
