@@ -35,6 +35,11 @@ function startMockServer(port, opts) {
           res.end(JSON.stringify({ access_token: 'tok123', expires_in: 3600 }));
           return;
         }
+        if (req.url.startsWith('/api/4/provision')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ system: { netName: 'RainMachine', localValveCount: 12, hardwareVersion: 3 } }));
+          return;
+        }
         if (req.url.startsWith('/api/4/zone/') && req.url.includes('/start')) {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ statusCode: 0 }));

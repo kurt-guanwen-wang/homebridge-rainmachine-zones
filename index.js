@@ -271,6 +271,31 @@ class RainMachineZonesPlatform {
     return zone.active !== false;
   }
 
+  // Best-effort, fetched once: controller name/zone count/hardware version from
+  // /provision, used for the Model shown in the Home app.
+  async loadControllerInfo() {
+    if (this.controllerInfo) return;
+    try {
+      const prov = await this.apiRequest('GET', '/provision');
+      const sys = (prov && prov.system) || {};
+      if (sys.netName) {
+        this.controllerInfo = {
+          netName: sys.netName,
+          valveCount: sys.localValveCount,
+          hwVer: sys.hardwareVersion,
+        };
+      }
+    } catch (err) {
+      this.log.debug('Could not fetch controller provision info: %s', this.describeError(err));
+    }
+  }
+
+  modelName() {
+    const info = this.controllerInfo;
+    if (!info || !info.netName) return PLUGIN_NAME;
+    return `${info.netName} ${info.valveCount} zones hwVer:${info.hwVer}`;
+  }
+
   async discoverZones() {
     const data = await this.apiRequest('GET', '/zone');
     const allZones = data.zones || [];
@@ -304,6 +329,8 @@ class RainMachineZonesPlatform {
       // Unchanged from the previous poll - still log at debug level for troubleshooting.
       this.log.debug('Zones unchanged: %s', zoneSummary || '(none)');
     }
+
+    await this.loadControllerInfo();
 
     const seen = new Set();
     for (const zone of zones) {
@@ -341,6 +368,14 @@ class RainMachineZonesPlatform {
     }
     accessory.context.zoneId = zone.uid;
     accessory.displayName = displayName;
+
+    const info =
+      accessory.getService(Service.AccessoryInformation) || accessory.addService(Service.AccessoryInformation);
+    info
+      .setCharacteristic(Characteristic.Manufacturer, PLUGIN_NAME)
+      .setCharacteristic(Characteristic.Model, this.modelName())
+      .setCharacteristic(Characteristic.SerialNumber, `zone-${zone.uid}`)
+      .setCharacteristic(Characteristic.FirmwareRevision, require('./package.json').version);
 
     const service = accessory.getService(Service.Valve) || accessory.addService(Service.Valve, displayName);
     service.setCharacteristic(Characteristic.Name, displayName);

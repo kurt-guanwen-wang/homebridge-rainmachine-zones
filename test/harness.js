@@ -98,6 +98,18 @@ async function run() {
     check('logged in message present', log.lines.some((l) => l.includes('Logged in to RainMachine')));
     check('configured summary logged', log.lines.some((l) => l.includes('Configured: address=')));
     check('2 active zones registered (inactive filtered)', api._registered.length === 2);
+    const infoVal = (c) =>
+      api._registered[0].getService(api.hap.Service.AccessoryInformation).getCharacteristic(c).value;
+    check('manufacturer is plugin name', infoVal(api.hap.Characteristic.Manufacturer) === 'homebridge-rainmachine-zones');
+    check(
+      'model from /provision',
+      infoVal(api.hap.Characteristic.Model) === 'RainMachine 12 zones hwVer:3'
+    );
+    check('serial is zone uid based', /^zone-/.test(infoVal(api.hap.Characteristic.SerialNumber)));
+    check(
+      'firmware is plugin version',
+      infoVal(api.hap.Characteristic.FirmwareRevision) === require('../package.json').version
+    );
     clearInterval(platform._pollTimer);
     server.close();
   }
