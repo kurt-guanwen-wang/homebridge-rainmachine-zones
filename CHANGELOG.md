@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/compare/v0.1.0...v0.2.0) (2026-10-15)
+
+
+### Features
+
+* report program status to homekit ([632d8c4](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/commit/632d8c4a6637b4552b5c4f1fd49f348ec5461ba6))
+
 # [0.1.0](https://github.com/kurt-guanwen-wang/homebridge-rainmachine-zones/compare/v0.0.4...v0.1.0) (2026-10-15)
 
 
